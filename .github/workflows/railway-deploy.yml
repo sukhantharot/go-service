@@ -18,40 +18,10 @@ jobs:
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           # Login to Railway
           railway login --browserless $RAILWAY_TOKEN
           
-          # Check if required environment variables are set
-          if [ -z "$DB_HOST" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_NAME" ] || [ -z "$DB_PORT" ]; then
-            echo "Error: Missing required database environment variables"
-            exit 1
-          fi
-          
-          # Create .env file from secrets
-          cat > .env << EOF
-          PORT=8080
-          DB_HOST=$DB_HOST
-          DB_USER=$DB_USER
-          DB_PASSWORD=$DB_PASSWORD
-          DB_NAME=$DB_NAME
-          DB_PORT=$DB_PORT
-          JWT_SECRET=$JWT_SECRET
-          EOF
-          
-          # Print environment variables (with sensitive data masked)
-          echo "Environment variables set:"
-          echo "DB_HOST: $DB_HOST"
-          echo "DB_USER: $DB_USER"
-          echo "DB_PASSWORD: ****"
-          echo "DB_NAME: $DB_NAME"
-          echo "DB_PORT: $DB_PORT"
-          
           # Deploy to Railway
-          railway up 
+          # Railway will automatically inject DATABASE_URL and other environment variables
+          railway up --detach 
