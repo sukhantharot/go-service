@@ -47,3 +47,6 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// Replace incompatible dependencies
+replace github.com/rogpeppe/go-internal => github.com/rogpeppe/go-internal v1.10.0
