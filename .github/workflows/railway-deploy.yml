@@ -15,7 +15,4 @@ jobs:
         uses: bervProject/railway-deploy@main
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: ${{ secrets.RAILWAY_SERVICE }}
-
-      - name: Verify deployment
-        run: railway variables list 
+          service: ${{ secrets.RAILWAY_SERVICE_ID }} 
