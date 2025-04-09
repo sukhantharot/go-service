@@ -12,7 +12,11 @@ import (
 func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	// Add logging middleware
 	router.Use(middleware.LoggingMiddleware())
-
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "healthy",
+		})
+	})
 	// Health check endpoint
 	router.GET("/api/health", func(c *gin.Context) {
 		// Check database connection

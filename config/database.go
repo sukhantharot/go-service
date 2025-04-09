@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 
@@ -13,6 +14,35 @@ import (
 )
 
 var DB *gorm.DB
+
+func cleanConnectionString(connStr string) string {
+	// If it's a URL format
+	if strings.HasPrefix(connStr, "postgres://") || strings.HasPrefix(connStr, "postgresql://") {
+		u, err := url.Parse(connStr)
+		if err != nil {
+			log.Printf("Warning: Could not parse DATABASE_URL as URL: %v", err)
+			return connStr
+		}
+		q := u.Query()
+		// Remove problematic parameters
+		q.Del("schema")
+		q.Del("connection_limit")
+		u.RawQuery = q.Encode()
+		return u.String()
+	}
+
+	// If it's a key=value format
+	parts := strings.Split(connStr, " ")
+	validParts := make([]string, 0)
+	for _, part := range parts {
+		// Skip problematic parameters
+		if !strings.HasPrefix(part, "schema=") &&
+			!strings.HasPrefix(part, "connection_limit=") {
+			validParts = append(validParts, part)
+		}
+	}
+	return strings.Join(validParts, " ")
+}
 
 func InitDB() *gorm.DB {
 	log.Println("Starting database initialization...")
@@ -42,7 +72,8 @@ func InitDB() *gorm.DB {
 
 	if dbURL != "" {
 		log.Println("Using DATABASE_URL for connection")
-		dsn = dbURL
+		dsn = cleanConnectionString(dbURL)
+		log.Println("Connection string cleaned and prepared")
 	} else if os.Getenv("RAILWAY_ENVIRONMENT") != "" {
 		log.Fatal("Error: Running on Railway but DATABASE_URL is not set. Please check:\n" +
 			"1. PostgreSQL database is provisioned in Railway\n" +
