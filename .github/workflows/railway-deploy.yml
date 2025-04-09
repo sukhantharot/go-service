@@ -22,6 +22,12 @@ jobs:
           # Login to Railway
           railway login --browserless $RAILWAY_TOKEN
           
-          # Deploy to Railway
-          # Railway will automatically inject DATABASE_URL and other environment variables
-          railway up --detach 
+          # Link to the project
+          railway link
+          
+          # Verify environment variables
+          echo "Checking Railway environment..."
+          railway variables list
+          
+          # Deploy to Railway with environment variables
+          railway up 

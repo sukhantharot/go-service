@@ -9,21 +9,47 @@ import (
 	"github.com/sukhantharot/go-service/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
-	var dsn string
+	log.Println("Starting database initialization...")
+	log.Printf("Running in environment: %s", os.Getenv("APP_ENV"))
+	log.Printf("RAILWAY_ENVIRONMENT: %s", os.Getenv("RAILWAY_ENVIRONMENT"))
 
-	// Check if DATABASE_URL is set (Railway style)
-	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
-		dsn = dbURL
+	// Print all environment variables for debugging
+	log.Println("Environment variables:")
+	for _, env := range os.Environ() {
+		pair := strings.SplitN(env, "=", 2)
+		if len(pair) == 2 {
+			key := pair[0]
+			value := pair[1]
+			// Mask sensitive information
+			if strings.Contains(strings.ToLower(key), "password") ||
+				strings.Contains(strings.ToLower(key), "secret") ||
+				strings.Contains(strings.ToLower(key), "token") ||
+				strings.Contains(strings.ToLower(key), "database_url") {
+				value = "****"
+			}
+			log.Printf("%s=%s", key, value)
+		}
+	}
+
+	var dsn string
+	dbURL := os.Getenv("DATABASE_URL")
+
+	if dbURL != "" {
 		log.Println("Using DATABASE_URL for connection")
+		dsn = dbURL
 	} else if os.Getenv("RAILWAY_ENVIRONMENT") != "" {
-		// If we're on Railway but no DATABASE_URL, this is an error
-		log.Fatal("Error: Running on Railway but DATABASE_URL is not set")
+		log.Fatal("Error: Running on Railway but DATABASE_URL is not set. Please check:\n" +
+			"1. PostgreSQL database is provisioned in Railway\n" +
+			"2. Database is linked to your service\n" +
+			"3. DATABASE_URL variable is set in service variables")
 	} else {
+		log.Println("Using individual connection parameters")
 		// Local development with individual parameters
 		host := os.Getenv("DB_HOST")
 		user := os.Getenv("DB_USER")
@@ -32,32 +58,71 @@ func InitDB() *gorm.DB {
 		port := os.Getenv("DB_PORT")
 
 		// Check if any required parameter is missing
-		if host == "" || user == "" || password == "" || dbname == "" || port == "" {
-			log.Printf("Missing database configuration: host=%s, user=%s, dbname=%s, port=%s",
-				host, user, dbname, port)
-			log.Fatal("Please set all required database environment variables or DATABASE_URL")
+		missingParams := []string{}
+		if host == "" {
+			missingParams = append(missingParams, "DB_HOST")
+		}
+		if user == "" {
+			missingParams = append(missingParams, "DB_USER")
+		}
+		if password == "" {
+			missingParams = append(missingParams, "DB_PASSWORD")
+		}
+		if dbname == "" {
+			missingParams = append(missingParams, "DB_NAME")
+		}
+		if port == "" {
+			missingParams = append(missingParams, "DB_PORT")
+		}
+
+		if len(missingParams) > 0 {
+			log.Fatalf("Missing required database parameters: %s", strings.Join(missingParams, ", "))
 		}
 
 		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 			host, user, password, dbname, port)
-		log.Println("Using individual parameters for connection")
 	}
 
-	// Log the connection string with password masked
-	maskedDSN := strings.Replace(dsn, os.Getenv("DB_PASSWORD"), "****", 1)
-	log.Printf("Connecting to database with: %s", maskedDSN)
+	log.Println("Attempting database connection...")
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// Configure GORM with detailed logging
+	gormConfig := &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				LogLevel: logger.Info,
+				Colorful: false,
+			},
+		),
+	}
+
+	db, err := gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
-		log.Fatal("Failed to connect to database: ", err)
+		log.Printf("Database connection error: %v", err)
+		log.Fatal("Failed to connect to database. Please check your configuration.")
 	}
 
 	log.Println("Successfully connected to database")
 
-	// Auto Migrate the schema
-	if err := db.AutoMigrate(&models.User{}, &models.Role{}, &models.Permission{}); err != nil {
-		log.Fatal("Failed to auto-migrate database schema: ", err)
+	// Test the connection
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatal("Failed to get database instance:", err)
 	}
+
+	err = sqlDB.Ping()
+	if err != nil {
+		log.Fatal("Failed to ping database:", err)
+	}
+
+	log.Println("Database ping successful")
+
+	// Auto Migrate the schema
+	log.Println("Starting database migration...")
+	if err := db.AutoMigrate(&models.User{}, &models.Role{}, &models.Permission{}); err != nil {
+		log.Fatal("Failed to migrate database schema:", err)
+	}
+	log.Println("Database migration completed successfully")
 
 	DB = db
 	return db
