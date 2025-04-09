@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/oat/go-service/config"
-	"github.com/oat/go-service/models"
+	"github.com/sukhantharot/go-service/config"
+	"github.com/sukhantharot/go-service/models"
 	"gorm.io/gorm"
 )
 
@@ -50,4 +50,4 @@ func (r *UserRepository) List() ([]models.User, error) {
 	var users []models.User
 	err := r.db.Preload("Role").Find(&users).Error
 	return users, err
-} 
+}

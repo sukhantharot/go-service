@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/oat/go-service/handlers"
-	"github.com/oat/go-service/middleware"
+	"github.com/sukhantharot/go-service/handlers"
+	"github.com/sukhantharot/go-service/middleware"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +25,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	{
 		// User routes
 		protected.GET("/users/me", handlers.GetCurrentUser)
-		
+
 		// Admin routes (example of role-based access)
 		admin := protected.Group("/admin")
 		admin.Use(middleware.RequirePermission("admin"))
@@ -35,4 +35,4 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 			admin.POST("/permissions", handlers.CreatePermission)
 		}
 	}
-} 
+}

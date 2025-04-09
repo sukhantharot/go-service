@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/oat/go-service/config"
-	"github.com/oat/go-service/routes"
+	"github.com/sukhantharot/go-service/config"
+	"github.com/sukhantharot/go-service/routes"
 )
 
 func main() {

@@ -5,19 +5,18 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/oat/go-service/models"
-	"github.com/oat/go-service/repository"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/sukhantharot/go-service/models"
+	"github.com/sukhantharot/go-service/repository"
 )
 
 type AuthService struct {
-	userRepo *repository.UserRepository
+	userRepo  *repository.UserRepository
 	jwtSecret string
 }
 
 func NewAuthService(userRepo *repository.UserRepository, jwtSecret string) *AuthService {
 	return &AuthService{
-		userRepo: userRepo,
+		userRepo:  userRepo,
 		jwtSecret: jwtSecret,
 	}
 }
@@ -85,4 +84,4 @@ func (s *AuthService) ValidateToken(tokenString string) (*jwt.Token, error) {
 		}
 		return []byte(s.jwtSecret), nil
 	})
-} 
+}

@@ -1,1 +1,31 @@
+# Environment variables
 .env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with go test -c
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# Keep go.sum
+!go.sum

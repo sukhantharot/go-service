@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/oat/go-service/config"
-	"github.com/oat/go-service/models"
+	"github.com/sukhantharot/go-service/config"
+	"github.com/sukhantharot/go-service/models"
 )
 
 func RequirePermission(permissionName string) gin.HandlerFunc {
@@ -40,4 +40,4 @@ func RequirePermission(permissionName string) gin.HandlerFunc {
 
 		c.Next()
 	}
-} 
+}

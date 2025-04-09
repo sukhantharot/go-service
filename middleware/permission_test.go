@@ -1,15 +1,16 @@
 package middleware
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/oat/go-service/config"
-	"github.com/oat/go-service/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/sukhantharot/go-service/config"
+	"github.com/sukhantharot/go-service/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -124,4 +125,4 @@ func TestRequirePermission(t *testing.T) {
 			}
 		})
 	}
-} 
+}
